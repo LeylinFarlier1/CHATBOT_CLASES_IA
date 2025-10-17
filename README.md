@@ -63,7 +63,7 @@ macro/
 │   │   ├── server_mcp.py          # FastMCP server with 15+ tools
 │   │   └── pyproject.toml         # Server dependencies
 │   ├── tools/
-│   │   ├── fetch/                 # Data acquisition tools
+│   │   ├── fetch/                 # Data acquisition tools (7 tools)
 │   │   │   ├── fetch_series_observations.py
 │   │   │   ├── fetch_series_metadata.py
 │   │   │   ├── search_fred_series.py
@@ -71,32 +71,40 @@ macro/
 │   │   │   ├── fetch_release_details.py
 │   │   │   ├── fetch_category_details.py
 │   │   │   └── fetch_fred_sources.py
-│   │   ├── plot/                  # Visualization tools
+│   │   ├── plot/                  # Visualization tools (4 tools)
 │   │   │   ├── plot_fred_series.py
 │   │   │   ├── plot_dual_axis.py
 │   │   │   ├── analyze_differencing.py
 │   │   │   └── plot_from_dataset.py
-│   │   └── build/                 # ETL pipeline
+│   │   └── build/                 # ETL pipeline (1 tool)
 │   │       └── build_fred_dataset.py
 │   └── resources/
-│       └── datasets.py            # MCP resource for dataset discovery
+│       ├── datasets.py            # MCP resource for dataset discovery
+│       └── fred_endpoints.json    # FRED API endpoint configurations
 │
 ├── mcp-client/                     # MCP Client
-│   ├── client.py                  # Main client with Claude integration
+│   ├── tui_app.py                 # Main TUI application (v0.4.0)
+│   ├── run_tui.py                 # TUI launcher script
+│   ├── client.py                  # CLI client with Claude integration
 │   ├── commands.py                # Slash command system
+│   ├── gui_backend.py             # Auto-opening plot windows (v0.4.0)
+│   ├── config/                    # Configuration management
 │   ├── ui/
 │   │   └── console_ui.py          # Rich-based UI components
-│   ├── utils/                     # Fase 3 utilities
+│   ├── utils/                     # Client utilities
 │   │   ├── history.py             # Conversation history manager
 │   │   ├── cache.py               # TTL-based resource cache
 │   │   └── input_handler.py      # Autocompletion with prompt-toolkit
-│   ├── conversations/             # Saved conversations (auto-created)
+│   ├── .env.example               # Environment variables template
+│   ├── INSTALL_TUI.bat            # Windows installer
+│   ├── INSTALL_TUI.sh             # Linux/macOS installer
 │   └── pyproject.toml             # Client dependencies
 │
 ├── init_db.py                      # Database initialization script
-├── nutrition.db                    # SQLite database
 └── README.md                       # This file
 ```
+
+> **Note:** Files like `nutrition.db`, `conversations/`, and `.env` are created automatically at runtime and are not included in the repository.
 
 ---
 
