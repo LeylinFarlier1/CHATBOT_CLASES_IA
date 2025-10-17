@@ -8,15 +8,26 @@
 
 ## Overview
 
-**Macro MCP** is a comprehensive system that combines the power of:
-- **FRED API**: Access to 800,000+ economic time series
-- **Claude AI**: Intelligent query processing and natural language interaction
-- **MCP Protocol**: Seamless tool and resource integration
-- **Modern UI**: Beautiful terminal (CLI) and full-screen (TUI) interfaces with visualizations
+**Macro MCP** is an AI-powered chatbot that lets you analyze economic data through natural language queries. Simply ask questions like *"Plot unemployment from 2020 to 2024"* or *"Build a dataset with GDP and inflation (YoY)"*, and the system fetches data from FRED's 800,000+ time series, generates publication-ready charts, and performs econometric analysis—all through a modern terminal interface with automatic plot windows.
+
+### How It Works
 
 The system consists of two main components:
-1. **MCP Server** (`macro/`): Exposes FRED data tools and resources
-2. **MCP Client** (`mcp-client/`): Interactive CLI and TUI with Claude integration
+1. **MCP Server** (`macro/app/server_mcp.py`): Exposes 15+ economic data tools via Model Context Protocol
+2. **MCP Client** (`mcp-client/tui_app.py`): Full-screen terminal UI that connects Claude AI to the data tools
+
+### Key Files to Understand
+
+| File | Purpose | What It Does |
+|------|---------|--------------|
+| **`macro/app/server_mcp.py`** | MCP Server | Registers all FRED data tools (fetch, plot, build) and exposes them via MCP protocol |
+| **`mcp-client/tui_app.py`** | TUI Application | Main interface - handles user input, connects to Claude & MCP server, displays results |
+| **`mcp-client/gui_backend.py`** | Plot Auto-Opener | Automatically opens matplotlib charts in native GUI windows (v0.4.0 feature) |
+| **`macro/tools/fetch/`** | Data Fetchers | 7 tools to search and retrieve economic data from FRED API |
+| **`macro/tools/plot/`** | Visualizers | 4 tools to create APA-style charts, dual-axis plots, and stationarity analysis |
+| **`macro/tools/build/`** | Dataset Builder | ETL pipeline to combine multiple series with transformations (YoY, QoQ, etc.) |
+| **`README.md`** | Main Guide | Installation, setup, and usage instructions (start here!) |
+| **`mcp-client/README.md`** | Client Guide | Quick start for running the TUI and troubleshooting |
 
 ---
 
