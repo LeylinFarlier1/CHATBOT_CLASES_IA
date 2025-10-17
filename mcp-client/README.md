@@ -37,37 +37,60 @@ After:  "Plot GDP" → Window opens instantly! (~2s) 🎉
 
 ## 🚀 Quick Start
 
-### 1. Install
+### 1. Prerequisites
+
+Before running the client, ensure you have:
+- ✅ Python 3.10+ installed
+- ✅ `uv` package manager ([installation guide](https://github.com/astral-sh/uv))
+- ✅ Cloned the repository
+- ✅ FRED API key in `macro/app/.env`
+- ✅ At least one LLM API key (see below)
+
+### 2. Install Dependencies
 
 ```bash
+# Navigate to client directory
 cd mcp-client
+
+# Install all dependencies
 uv sync
 ```
 
-### 2. Configure
+### 3. Configure API Keys
 
-Create `.env` file:
+Create a `.env` file in the `mcp-client/` directory:
 
 ```bash
-# At least one API key required
-ANTHROPIC_API_KEY=your_key_here
-OPENAI_API_KEY=your_key_here
-GEMINI_API_KEY=your_key_here
+# Required: At least ONE LLM API key
+ANTHROPIC_API_KEY=sk-ant-xxxxx          # For Claude models
+OPENAI_API_KEY=sk-xxxxx                 # For GPT models
+GEMINI_API_KEY=xxxxx                    # For Gemini models
+
+# Optional: Default LLM configuration
+DEFAULT_LLM_PROVIDER=claude             # Options: claude, openai, gemini
+DEFAULT_MODEL=claude-3-7-sonnet-20250219
 
 # Optional: GUI settings (v0.4.0)
-GUI_AUTO_OPEN=true          # Enable auto-open (default)
-GUI_BACKEND=auto            # Auto-detect (recommended)
-
-# Optional: Default LLM
-DEFAULT_LLM_PROVIDER=claude
-DEFAULT_MODEL=claude-3-7-sonnet-20250219
+GUI_AUTO_OPEN=true                      # Auto-open plot windows
+GUI_BACKEND=auto                        # Auto-detect best GUI backend
 ```
 
-### 3. Run
+**API Key Sources:**
+- **Anthropic (Claude):** https://console.anthropic.com/
+- **OpenAI (GPT):** https://platform.openai.com/api-keys
+- **Google (Gemini):** https://ai.google.dev/
+
+### 4. Run the TUI
 
 ```bash
 uv run python tui_app.py
 ```
+
+**That's it!** The TUI will:
+1. ✅ Automatically start the MCP server
+2. ✅ Connect to FRED API (using key in `macro/app/.env`)
+3. ✅ Initialize your selected LLM provider
+4. ✅ Load 15+ economic data tools
 
 ### 4. Try It!
 
@@ -232,7 +255,84 @@ uv lock --upgrade
 
 ---
 
-## 📜 License
+## � Troubleshooting
+
+### Problem: "FRED_API_KEY environment variable is missing"
+
+**Cause:** MCP server needs FRED API key to fetch economic data.
+
+**Solution:**
+1. Navigate to `macro/` directory (NOT `macro/app/` and NOT `mcp-client/`)
+2. Create `.env` file with: `FRED_API_KEY=your_key_here`
+3. Get free key at: https://fred.stlouisfed.org/docs/api/api_key.html
+4. File should be at: `macro/.env`
+5. Restart TUI
+
+### Problem: "No API key found for provider: claude/openai/gemini"
+
+**Cause:** Missing LLM API key in mcp-client configuration.
+
+**Solution:**
+1. Navigate to `mcp-client/` directory
+2. Verify `.env` file exists with at least ONE API key:
+   ```env
+   ANTHROPIC_API_KEY=sk-ant-xxxxx
+   # OR
+   OPENAI_API_KEY=sk-xxxxx
+   # OR
+   GEMINI_API_KEY=xxxxx
+   ```
+
+### Problem: Plots show file paths instead of opening windows
+
+**Cause:** GUI backend not available or disabled.
+
+**Solution:**
+- Check `GUI_AUTO_OPEN=true` in `mcp-client/.env`
+- Ensure you're not in SSH/remote session without X11
+- Windows/macOS: Should work automatically
+- Linux: Verify X11 display available
+
+### Problem: "Connection refused" or server timeout
+
+**Cause:** MCP server path incorrect or dependencies missing.
+
+**Solution:**
+1. Verify server dependencies: `cd macro/app && uv sync`
+2. Check error message for server path - should end with `/macro/app`
+3. Ensure relative paths work: TUI must be run from `mcp-client/` directory
+
+### Problem: Tools not working or returning errors
+
+**Cause:** Usually API key issues or network problems.
+
+**Solution:**
+1. Verify API keys are valid (check console.anthropic.com)
+2. Check API quota hasn't been exceeded
+3. Verify FRED API is accessible (try https://fred.stlouisfed.org)
+4. Check logs in terminal for specific error messages
+
+### Problem: Dependencies conflicts or "package not found"
+
+**Solution:**
+```bash
+# Clean install
+cd mcp-client
+rm -rf .venv
+uv sync
+```
+
+### Still stuck?
+
+1. 📋 Check terminal output for detailed error messages
+2. 🔍 Verify BOTH `.env` files exist in correct locations:
+   - `macro/.env` (FRED_API_KEY) ← Note: in `macro/`, not `macro/app/`
+   - `mcp-client/.env` (LLM API keys)
+3. 🐛 Open GitHub issue with error details
+
+---
+
+## �📜 License
 
 MIT License - See LICENSE file
 

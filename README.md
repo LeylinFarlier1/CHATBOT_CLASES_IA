@@ -103,40 +103,114 @@ macro/
 ## Installation
 
 ### Prerequisites
-- Python 3.10 or higher
-- [uv](https://github.com/astral-sh/uv) package manager
-- FRED API key ([get one free](https://fred.stlouisfed.org/docs/api/api_key.html))
-- Anthropic API key ([get one here](https://console.anthropic.com/))
+- **Python 3.10 or higher**
+- **[uv](https://github.com/astral-sh/uv) package manager** - Install with:
+  ```bash
+  # Windows (PowerShell)
+  powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+  
+  # Linux/macOS
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+  ```
+- **FRED API key** - [Get one free here](https://fred.stlouisfed.org/docs/api/api_key.html) (required for data access)
+- **Anthropic API key** - [Get one here](https://console.anthropic.com/) (required for Claude AI)
+- **Optional:** OpenAI or Gemini API keys for alternative LLM providers
 
 ### Step 1: Clone Repository
 ```bash
-git clone <repository-url>
-cd macro
+git clone https://github.com/LeylinFarlier1/CHATBOT_CLASES_IA.git
+cd CHATBOT_CLASES_IA
 ```
 
-### Step 2: Set Up Environment Variables
-Create a `.env` file in `macro/app/` directory:
+### Step 2: Configure API Keys
+
+You need to create **TWO separate `.env` files** in different directories:
+
+#### 📁 File 1: `macro/.env` (For FRED API)
+
+```bash
+# Navigate from repository root
+cd macro
+
+# Create .env file with your FRED API key
+```
+
+**Content of `macro/.env`:**
 ```env
 FRED_API_KEY=your_fred_api_key_here
 ```
 
-Create a `.env` file in `mcp-client/` directory:
+> Get your free FRED API key at: https://fred.stlouisfed.org/docs/api/api_key.html
+
+---
+
+#### 📁 File 2: `mcp-client/.env` (For LLM APIs)
+
+```bash
+# Navigate from repository root
+cd mcp-client
+
+# Create .env file with your LLM API keys
+```
+
+**Content of `mcp-client/.env`:**
 ```env
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
+# Required: At least one LLM API key
+ANTHROPIC_API_KEY=your_anthropic_key_here
+
+# Optional: Additional LLM providers
+OPENAI_API_KEY=your_openai_key_here
+GEMINI_API_KEY=your_gemini_key_here
+
+# Optional: Default LLM configuration
+DEFAULT_LLM_PROVIDER=claude
+DEFAULT_MODEL=claude-3-7-sonnet-20250219
+
+# Optional: GUI settings (v0.4.0+)
+GUI_AUTO_OPEN=true
+GUI_BACKEND=auto
+```
+
+> **Get API keys:**
+> - Anthropic (Claude): https://console.anthropic.com/
+> - OpenAI (GPT): https://platform.openai.com/api-keys
+> - Google (Gemini): https://ai.google.dev/
+
+**Final structure should look like:**
+```
+CHATBOT_CLASES_IA/
+├── macro/
+│   ├── .env              ← FRED_API_KEY here (read by server_mcp.py)
+│   └── app/
+│       └── server_mcp.py
+└── mcp-client/
+    ├── .env              ← ANTHROPIC_API_KEY here
+    └── tui_app.py
 ```
 
 ### Step 3: Install Dependencies
 
 **Install Server Dependencies:**
 ```bash
+# From repository root (CHATBOT_CLASES_IA/)
 cd macro/app
 uv sync
 ```
 
 **Install Client Dependencies:**
 ```bash
-cd ../../mcp-client
+# From repository root (CHATBOT_CLASES_IA/)
+cd mcp-client
 uv sync
+```
+
+> **Note:** The TUI client automatically starts the MCP server when launched. You don't need to run the server separately!
+
+**Verify installation:**
+```bash
+# Check both environments are ready
+cd macro/app && uv run python --version
+cd ../../mcp-client && uv run python --version
 ```
 
 ---
@@ -678,12 +752,73 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
+## Troubleshooting
+
+### ❌ "FRED_API_KEY environment variable is missing"
+
+**Problem:** MCP server can't access FRED API.
+
+**Solution:** 
+1. Verify `.env` file exists in `macro/.env` (NOT in `macro/app/`)
+2. Ensure it contains: `FRED_API_KEY=your_actual_key`
+3. Restart the TUI application
+
+### ❌ "Connection failed" or "Server not responding"
+
+**Problem:** TUI can't connect to MCP server.
+
+**Solution:**
+1. Check that `uv` is installed: `uv --version`
+2. Verify server dependencies: `cd macro/app && uv sync`
+3. Check server path in error message matches your installation
+
+### ❌ "No LLM API key found"
+
+**Problem:** No Anthropic/OpenAI/Gemini key configured.
+
+**Solution:**
+1. Verify `.env` file exists in `mcp-client/.env`
+2. Ensure at least ONE of these keys is set:
+   - `ANTHROPIC_API_KEY=sk-ant-...`
+   - `OPENAI_API_KEY=sk-...`
+   - `GEMINI_API_KEY=...`
+
+### ❌ Plots not opening automatically (v0.4.0+)
+
+**Problem:** Plot windows don't open, only file paths shown.
+
+**Solution:**
+1. Check if running in SSH/remote without X11 forwarding
+2. Verify `GUI_AUTO_OPEN=true` in `mcp-client/.env`
+3. Windows/macOS: Should work automatically
+4. Linux: Ensure X11 server is running
+
+### ❌ "Module not found" errors
+
+**Problem:** Missing dependencies.
+
+**Solution:**
+```bash
+# Reinstall dependencies
+cd macro/app && uv sync
+cd ../../mcp-client && uv sync
+```
+
+### 📝 Still having issues?
+
+1. Check logs in terminal output
+2. Verify all `.env` files are in correct locations
+3. Ensure API keys are valid and have quota
+4. Open an issue on GitHub with error details
+
+---
+
 ## Contact & Support
 
 For questions, issues, or feature requests:
-- Open an issue on GitHub
-- Check existing documentation in `/docs`
-- Review [FASE3_DOCUMENTATION.md](mcp-client/FASE3_DOCUMENTATION.md) for advanced features
+- 🐛 **Report bugs:** Open an issue on GitHub
+- 📖 **Documentation:** Check files in repository root
+- 💬 **Discussions:** Use GitHub Discussions
 
 ---
 
