@@ -1,0 +1,92 @@
+# Environment variables
+.env
+
+# Python-specific ignores
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Project-specific
+.mcp_history
+conversations/
+*.db
+nutrition.db
+uv.lock
+
+# Work in progress / Testing files (NO subir a GitHub)
+mcp-client/tui_app_new.py
+mcp-client/test_*.py
+mcp-client/run_tui_new.py
+mcp-client/_legacy/
+mcp-client/.venv/
+mcp-client/.pytest_cache/
+mcp-client/.claude/
+mcp-client/tests/
+
+# Architecture and development docs (NO subir)
+mcp-client/ARCHITECTURE.md
+
+# Phase documentation (keep only essential docs)
+mcp-client/FASE4_5_COMPLETED.md
+mcp-client/FINAL_SESSION_SUMMARY.md
+mcp-client/PHASE*.md
+mcp-client/SESSION_SUMMARY.md
+mcp-client/TEST_*.md
+mcp-client/PROJECT_STATUS.md
+
+# GitHub upload guide (local only)
+GITHUB_UPLOAD_GUIDE.md
+RESUMEN_GITHUB.md
+verify_github_files.sh
+
+# Unrelated project directories
+/Apify/
+/Chekpoint2_Balestrino_sanguineti_botti_mealla/
+/Fred/
+/IA.Clases/
+/W3 python/
+/apify1/
+/econ_mcp/
+/Gym Fit/
+/HOLA/
+/TESIS/
+/Temas/
+/enter/
+/proyecto1/
+/mcp/
+/mcppp/
+/nutri/
+/vscode/
+/wowo/

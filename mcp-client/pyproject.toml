@@ -1,0 +1,30 @@
+[project]
+name = "mcp-client"
+version = "0.4.0"
+description = "MCP Client for Macro Economic Analysis with Multi-LLM + Plot Preview"
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "anthropic>=0.69.0",
+    "mcp>=1.17.0",
+    "rich>=14.2.0",
+    "prompt-toolkit>=3.0.43",
+    "textual>=0.47.0",
+    "google-generativeai>=0.8.0",
+    "openai>=1.0.0",
+    "python-dotenv>=1.0.0",
+    "pillow>=10.0.0",  # NEW: For ASCII conversion
+]
+
+[dependency-groups]
+dev = [
+    "pytest-asyncio>=1.2.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]

@@ -1,0 +1,54 @@
+{
+  "name": "fred_endpoints",
+  "type": "json",
+  "schema": {
+    "endpoint": "string",
+    "url": "string",
+    "required_param": "string",
+    "description": "string"
+  },
+  "data": [
+    {
+      "endpoint": "series",
+      "url": "https://api.stlouisfed.org/fred/series",
+      "required_param": "series_id",
+      "description": "Metadatos de una serie"
+    },
+    {
+      "endpoint": "series/observations",
+      "url": "https://api.stlouisfed.org/fred/series/observations",
+      "required_param": "series_id",
+      "description": "Valores históricos de una serie"
+    },
+    {
+      "endpoint": "series/search",
+      "url": "https://api.stlouisfed.org/fred/series/search",
+      "required_param": "search_text",
+      "description": "Busca series por texto"
+    },
+    {
+      "endpoint": "releases",
+      "url": "https://api.stlouisfed.org/fred/releases",
+      "required_param": null,
+      "description": "Lista todas las releases"
+    },
+    {
+      "endpoint": "release",
+      "url": "https://api.stlouisfed.org/fred/release",
+      "required_param": "release_id",
+      "description": "Metadatos de una release"
+    },
+    {
+      "endpoint": "category",
+      "url": "https://api.stlouisfed.org/fred/category",
+      "required_param": "category_id",
+      "description": "Metadatos de una categoría"
+    },
+    {
+      "endpoint": "sources",
+      "url": "https://api.stlouisfed.org/fred/sources",
+      "required_param": null,
+      "description": "Lista todas las fuentes"
+    }
+  ]
+}

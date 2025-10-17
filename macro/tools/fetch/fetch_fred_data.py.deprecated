@@ -1,0 +1,178 @@
+from mcp.server.fastmcp import FastMCP
+from fredapi import Fred
+import pandas as pd
+import json
+import os
+from datetime import datetime
+import requests
+import re
+import time
+import logging
+import openpyxl 
+
+
+mcp = FastMCP("macro-mcp")
+
+# Configurar logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+
+# Cargar endpoints válidos
+def load_fred_endpoints():
+    try:
+        with open(os.path.join(os.path.dirname(__file__), "../resources/fred_endpoints.json"), "r") as f:
+            return json.load(f)["data"]
+    except FileNotFoundError:
+        raise ValueError("fred_endpoints.json not found")
+    except json.JSONDecodeError:
+        raise ValueError("Invalid fred_endpoints.json format")
+
+@mcp.tool()
+def fetch_fred_data(endpoint: str, params: dict = None, output_format: str = "json") -> str:
+    """
+    Tool MCP: Fetches raw macroeconomic data from the FRED API without processing.
+    Now also saves CSV and Excel for 'series/observations' in a structured local folder.
+
+    Args:
+        endpoint (str): FRED API endpoint (e.g., 'series', 'series/observations', 'series/search').
+        params (dict, optional): Query parameters.
+        output_format (str): Output format ('json' or 'csv'). Defaults to 'json'.
+
+    Returns:
+        str: JSON string or message indicating file locations.
+    """
+
+    # --- Validaciones iniciales ---
+    if not endpoint:
+        raise ValueError("Endpoint is required")
+    if params is None:
+        params = {}
+    valid_formats = ["json", "csv"]
+    if output_format not in valid_formats:
+        raise ValueError(f"Invalid output_format. Must be one of {valid_formats}")
+
+    # Validar endpoint
+    endpoints = load_fred_endpoints()
+    endpoint_info = next((e for e in endpoints if e["endpoint"] == endpoint), None)
+    if not endpoint_info:
+        raise ValueError(f"Endpoint {endpoint} not supported")
+
+    # Validar clave FRED
+    api_key = os.getenv("FRED_API_KEY")
+    if not api_key:
+        raise ValueError("FRED_API_KEY environment variable is missing")
+
+    fred = Fred(api_key=api_key)
+    offset = 0
+    limit = params.get("limit", 1000)
+    all_data = []
+    has_more = True
+    max_batches = 5 if endpoint == "series/search" else 10
+
+    while has_more:
+        query_params = {**params, "offset": offset, "limit": limit, "api_key": api_key, "file_type": "json"}
+        if endpoint == "series/search":
+            query_params.setdefault("order_by", "popularity")
+            query_params.setdefault("sort_order", "desc")
+
+        try:
+            if endpoint == "series":
+                data = fred.get_series_info(params.get("series_id", "")).__dict__
+                all_data = [data]
+                has_more = False
+
+            elif endpoint == "series/observations":
+                series_id = params.get("series_id", "unknown_series")
+                df = fred.get_series(
+                    series_id,
+                    observation_start=params.get("observation_start", "2022-01-01"),
+                    observation_end=params.get("observation_end")
+                )
+                df = pd.Series(df).dropna().reset_index()
+                df.columns = ["date", "value"]
+                df["date"] = pd.to_datetime(df["date"])
+                all_data = df.to_dict("records")
+                has_more = False
+
+                # === GUARDAR EN DISCO ===
+                base_dir = r"C:\Users\agust\Downloads\FRED_Data"
+                series_dir = os.path.join(base_dir, series_id)
+                series_subdir = os.path.join(series_dir, "series")
+                grafico_subdir = os.path.join(series_dir, "grafico")
+                os.makedirs(series_subdir, exist_ok=True)
+                os.makedirs(grafico_subdir, exist_ok=True)
+
+                # Crear nombre descriptivo con rango de fechas de los datos
+                start_date = df["date"].min().strftime("%Y-%m-%d")
+                end_date = df["date"].max().strftime("%Y-%m-%d")
+                download_date = datetime.now().strftime("%Y%m%d")
+
+                filename = f"{series_id}_{start_date}_to_{end_date}_downloaded_{download_date}"
+                csv_path = os.path.join(series_subdir, f"{filename}.csv")
+                xlsx_path = os.path.join(series_subdir, f"{filename}.xlsx")
+
+                df.to_csv(csv_path, index=False)
+                df.to_excel(xlsx_path, index=False)
+
+                logger.info(f"Saved CSV: {csv_path}")
+                logger.info(f"Saved Excel: {xlsx_path}")
+
+                saved_files = {
+                    "csv_path": csv_path,
+                    "excel_path": xlsx_path
+                }
+
+            else:
+                # Otros endpoints
+                url = f"https://api.stlouisfed.org/fred/{endpoint}"
+                response = requests.get(url, params=query_params)
+                if response.status_code == 429:
+                    time.sleep(1)
+                    response = requests.get(url, params=query_params)
+                if not response.ok:
+                    raise ValueError(f"Error fetching {endpoint}: {response.status_code} {response.text}")
+                json_data = response.json()
+
+                data_key = (
+                    "seriess" if endpoint == "series/search" else
+                    "releases" if endpoint == "releases" else
+                    "categories" if endpoint == "category" else
+                    "sources" if endpoint == "sources" else
+                    None
+                )
+                batch_data = json_data.get(data_key, [json_data])
+                all_data.extend(batch_data)
+
+                if "count" in json_data and len(batch_data) > 0:
+                    total = json_data["count"]
+                    next_offset = offset + limit
+                    has_more = next_offset < total and (offset // limit) < max_batches
+                    offset = next_offset
+                else:
+                    has_more = False
+
+        except Exception as e:
+            raise ValueError(f"Error fetching {endpoint}: {str(e)}") from e
+
+        if has_more:
+            time.sleep(0.5)
+
+    # --- Output estructurado ---
+    output = {
+        "endpoint": endpoint,
+        "data": all_data,
+        "metadata": {
+            "endpoint": endpoint,
+            "params": params,
+            "fetch_date": datetime.now().isoformat(),
+            "total_count": len(all_data)
+        }
+    }
+
+    if endpoint == "series/observations":
+        output["saved_files"] = saved_files
+
+    if output_format == "json":
+        return json.dumps(output, indent=2, default=str)
+    elif output_format == "csv":
+        return f"Files saved: {json.dumps(saved_files, indent=2)}"
